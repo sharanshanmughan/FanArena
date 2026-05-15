@@ -1,10 +1,11 @@
 package com.example.jetpacktutorial.feature.auth
 
+
+
 import android.app.Activity
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.jetpacktutorial.core.data.model.User
 import com.example.jetpacktutorial.core.data.repository.AuthRepository
 import com.example.jetpacktutorial.core.utils.GoogleAuthManager
 import dagger.hilt.android.lifecycle.HiltViewModel

@@ -1,10 +1,8 @@
-package com.example.jetpacktutorial.feature.home
-
-
+package com.example.jetpacktutorial.feature.teams
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.jetpacktutorial.core.data.repository.HomeRepository
+import com.example.jetpacktutorial.core.data.repository.TeamsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,12 +11,12 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(repository: HomeRepository) : ViewModel() {
+class TeamsViewModel @Inject constructor(repository: TeamsRepository) : ViewModel() {
 
-    val uiState: StateFlow<HomeUiState> = repository.getHomeData()
+    val uiState: StateFlow<TeamsUiState> = repository.getIplTeamsList()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = HomeUiState.Loading // Changed from data class instantiation
+            initialValue = TeamsUiState.Loading
         )
 }

@@ -13,20 +13,19 @@ sealed class Routes(
     data object Dashboard :
         Routes("dashboard")
 
-    data object Home :
-        Routes("home")
+    data object FanPoll :
+        Routes("fan_poll")
 
     data object Leaderboard :
         Routes("leaderboard")
 
-    data object Profile :
-        Routes("profile")
+    data object Profile : Routes("profile")
 
-    data object MatchDetails :
-        Routes("match_details/{matchId}") {
+    data object TopMasters : Routes("top_masters")
 
-        fun createRoute(
-            matchId: String
-        ) = "match_details/$matchId"
-    }
+    data object Prediction : Routes("prediction")
+
+    data object TodayMatches : Routes("today_matches")
+
+    data object TrendingPrediction : Routes("trending_prediction")
 }

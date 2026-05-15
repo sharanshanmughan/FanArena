@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -45,18 +44,34 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import com.example.jetpacktutorial.feature.feed.FanFeedScreen
 import com.example.jetpacktutorial.feature.home.HomeScreen
 import com.example.jetpacktutorial.feature.leaderboard.LeaderboardScreen
-import com.example.jetpacktutorial.feature.profile.ProfileScreen
+import com.example.jetpacktutorial.feature.livematch.MatchHubScreen
+import com.example.jetpacktutorial.feature.teams.TeamScreen
 import com.example.jetpacktutorial.navigation.BottomNavItem
+import com.example.jetpacktutorial.navigation.Routes
 
 
 @Composable
-fun DashboardScreen(){
+fun DashboardScreen(
+    tab: String?,
+    onNavigateToPredict: () -> Unit,
+    onNavigateToTodayMatch: () -> Unit,
+    onNavigateToTrendingPrediction: () -> Unit,
+    onNavigateToFanPoll: () -> Unit,
+    onNavigateTopMasters:()-> Unit
+) {
 
-    var currentTab by rememberSaveable { mutableStateOf( BottomNavItem.Home.route) }
+
     val activity = LocalContext.current as? Activity
 
+    var currentTab by rememberSaveable { mutableStateOf(tab ?: BottomNavItem.Home.route) }
+
+    val switchTab: (String) -> Unit = { selectedTab ->
+        currentTab = selectedTab
+    }
 
 
     Scaffold(
@@ -74,19 +89,45 @@ fun DashboardScreen(){
                 BottomNavItem.Home.route ->
                     Animation { offset, alpha ->
                         HomeScreen(
-                            padding
+                            padding,
+                            switchTab,
+                            seeAllTodayMatch = {
+                                onNavigateToTodayMatch()
+                            },
+                            seeAllTrendingPredictions = {
+                                onNavigateToTrendingPrediction()
+                            },
+                            seeAllFanPoll = {
+                                onNavigateToFanPoll()
+                            },
+                            seeAllTopMasters = {
+                                onNavigateTopMasters()
+                            }
                         )
+                    }
+
+                BottomNavItem.Match.route ->
+                    Animation { offset, alpha ->
+                        MatchHubScreen(onBackClicked = {}, onNavigateToPredict = {
+                            onNavigateToPredict()
+                        })
+                    }
+
+                BottomNavItem.Feed.route ->
+                    Animation { offset, alpha ->
+                        FanFeedScreen()
                     }
 
                 BottomNavItem.Leaderboard.route ->
                     Animation { offset, alpha ->
-                        LeaderboardScreen(padding)
+                        LeaderboardScreen()
                     }
 
-                BottomNavItem.Profile.route ->
+                BottomNavItem.Team.route ->
                     Animation { offset, alpha ->
-                        ProfileScreen(padding)
+                        TeamScreen(onTeamSelected = {})
                     }
+
 
             }
 
@@ -96,9 +137,11 @@ fun DashboardScreen(){
 
     BackHandler {
         when (currentTab) {
-
+            BottomNavItem.Match.route,
+            BottomNavItem.Feed.route,
             BottomNavItem.Leaderboard.route,
-            BottomNavItem.Profile.route -> currentTab = BottomNavItem.Home.route
+            BottomNavItem.Team.route -> currentTab = BottomNavItem.Home.route
+
             BottomNavItem.Home.route -> activity?.finishAndRemoveTask()
         }
     }
@@ -107,7 +150,7 @@ fun DashboardScreen(){
 
 @Composable
 fun Animation(
-    content: @Composable (offset :Dp, alpha:Float) -> Unit
+    content: @Composable (offset: Dp, alpha: Float) -> Unit
 ) {
     var start by remember { mutableStateOf(false) }
     val offset by animateDpAsState(
@@ -124,17 +167,19 @@ fun Animation(
     LaunchedEffect(Unit) {
         start = true
     }
-    content(offset,alpha)
+    content(offset, alpha)
 }
 
 @Composable
 fun BottomBar(currentTab: String, padding: PaddingValues, onTabSelected: (String) -> Unit) {
     val bottomBarItems = listOf(
         BottomNavItem.Home,
+        BottomNavItem.Match,
+        BottomNavItem.Feed,
         BottomNavItem.Leaderboard,
-        BottomNavItem.Profile,
+        BottomNavItem.Team,
 
-    )
+        )
 
     Surface(
         modifier = Modifier
@@ -151,7 +196,12 @@ fun BottomBar(currentTab: String, padding: PaddingValues, onTabSelected: (String
                 .height(1.dp)
                 .background(
                     Brush.horizontalGradient(
-                        colors = listOf(Color.Transparent, Color(0xFF00D1FF), Color(0xFFAD00FF), Color.Transparent)
+                        colors = listOf(
+                            Color.Transparent,
+                            Color(0xFF00D1FF),
+                            Color(0xFFAD00FF),
+                            Color.Transparent
+                        )
                     )
                 )
         )
@@ -203,7 +253,7 @@ fun BottomBar(currentTab: String, padding: PaddingValues, onTabSelected: (String
 
                     Text(
                         text = item.title,
-                        fontSize = 14.sp,
+                        fontSize = 11.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         softWrap = false,

@@ -8,6 +8,8 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
@@ -21,6 +23,8 @@ private val LightColorScheme = lightColorScheme(
     secondary = PurpleGrey40,
     tertiary = Pink40
 
+
+
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
     surface = Color(0xFFFFFBFE),
@@ -31,6 +35,15 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF1C1B1F),
     */
 )
+
+
+val DarkBackground = Color(0xFF0B0E14)
+val SurfaceGlass = Color(0xFF1E222B).copy(alpha = 0.45f)
+val BorderGlass = Color(0xFFFFFFFF).copy(alpha = 0.12f)
+
+val IPLOrangeGradient = Brush.horizontalGradient(listOf(Color(0xFFFF5722), Color(0xFFFF9800)))
+val IPLPurpleGradient = Brush.horizontalGradient(listOf(Color(0xFF4A148C), Color(0xFF8E24AA)))
+val AccentNeonGlow = Color(0xFF00E5FF)
 
 @Composable
 fun JetpackTutorialTheme(

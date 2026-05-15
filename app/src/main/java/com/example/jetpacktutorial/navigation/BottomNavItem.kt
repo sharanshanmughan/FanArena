@@ -1,6 +1,7 @@
 package com.example.jetpacktutorial.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
@@ -19,15 +20,27 @@ sealed class BottomNavItem(
         icon = Icons.Default.Home
     )
 
+    data object Match : BottomNavItem(
+        route = "match",
+        title = "Match Hub",
+        icon = Icons.Filled.Face
+    )
+
+    data object Feed : BottomNavItem(
+        route = "feed",
+        title = "Feed",
+        icon = Icons.Filled.DateRange
+    )
+
     data object Leaderboard : BottomNavItem(
         route = "leaderboard",
         title = "Rank",
         icon = Icons.Default.Star
     )
 
-    data object Profile : BottomNavItem(
-        route = "profile",
-        title = "Profile",
+    data object Team : BottomNavItem(
+        route = "team",
+        title = "Teams",
         icon = Icons.Default.Person
     )
 }

@@ -1,24 +1,21 @@
-package com.example.jetpacktutorial.feature.home
-
-
+package com.example.jetpacktutorial.feature.todayMatches
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.jetpacktutorial.core.data.repository.HomeRepository
+import com.example.jetpacktutorial.core.data.repository.TodayMatchesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(repository: HomeRepository) : ViewModel() {
+class TodayMatchesViewModel @Inject constructor(repository: TodayMatchesRepository) : ViewModel() {
 
-    val uiState: StateFlow<HomeUiState> = repository.getHomeData()
+    val uiState: StateFlow<TodayMatchesUiState> = repository.getTodayMatches()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = HomeUiState.Loading // Changed from data class instantiation
+            initialValue = TodayMatchesUiState.Loading
         )
 }

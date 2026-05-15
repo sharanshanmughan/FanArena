@@ -1,17 +1,19 @@
 package com.example.jetpacktutorial.navigation
 
-import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.jetpacktutorial.feature.arenaMasters.TopMastersScreen
 import com.example.jetpacktutorial.feature.auth.LoginScreen
 import com.example.jetpacktutorial.feature.dashboard.DashboardScreen
-import com.example.jetpacktutorial.feature.home.HomeScreen
-import com.example.jetpacktutorial.feature.leaderboard.LeaderboardScreen
-import com.example.jetpacktutorial.feature.livematch.MatchDetailsScreen
-import com.example.jetpacktutorial.feature.profile.ProfileScreen
+import com.example.jetpacktutorial.feature.fanPoll.FanPollsScreen
+import com.example.jetpacktutorial.feature.prediction.PredictionScreen
 import com.example.jetpacktutorial.feature.spash.SplashScreen
+import com.example.jetpacktutorial.feature.todayMatches.TodayMatchesScreen
+import com.example.jetpacktutorial.feature.trendingPrediction.TrendingPredictionsScreen
 
 @Composable
 fun AppNavGraph() {
@@ -21,7 +23,7 @@ fun AppNavGraph() {
 
     NavHost(
         navController = navController,
-        startDestination = Routes.Splash.route
+        startDestination = Routes.Dashboard.route
     ) {
 
         composable(
@@ -30,7 +32,7 @@ fun AppNavGraph() {
 
             SplashScreen(
 
-            ){
+            ) {
                 navController.navigate(Routes.Login.route)
             }
         }
@@ -41,29 +43,60 @@ fun AppNavGraph() {
 
             LoginScreen(
 
-            ){
+            ) {
 
                 navController.navigate(Routes.Dashboard.route)
             }
         }
 
         composable(
-            Routes.Dashboard.route
-        ) {
-
-            DashboardScreen()
+            Routes.Dashboard.route + "?tab={tab}",
+            listOf(navArgument("tab") {
+                type = NavType.StringType
+                defaultValue = BottomNavItem.Home.route
+            })
+        ) { backStackEntry ->
+            val tab = backStackEntry.arguments?.getString("tab")
+            DashboardScreen(
+                tab,
+                onNavigateToPredict = {
+                    navController.navigate(Routes.Prediction.route)
+                },
+                onNavigateToTodayMatch = {
+                    navController.navigate(Routes.TodayMatches.route)
+                },
+                onNavigateToTrendingPrediction = {
+                    navController.navigate(Routes.TrendingPrediction.route)
+                },
+                onNavigateToFanPoll = {
+                    navController.navigate(Routes.FanPoll.route)
+                },
+                onNavigateTopMasters = {
+                    navController.navigate(Routes.TopMasters.route)
+                }
+            )
         }
 
-        composable(
-            route =
-                Routes.MatchDetails.route,
+        composable(Routes.Prediction.route) {
+            PredictionScreen(onBackClicked = {}, onSubmitComplete = {})
+        }
 
+        composable(Routes.TodayMatches.route) {
+            TodayMatchesScreen() {
 
-        ) { backStackEntry ->
+            }
+        }
 
+        composable(Routes.TrendingPrediction.route) {
+            TrendingPredictionsScreen(onPredictionCardClicked = {})
+        }
 
+        composable(Routes.FanPoll.route) {
+            FanPollsScreen()
+        }
 
-            MatchDetailsScreen()
+        composable(Routes.TopMasters.route) {
+            TopMastersScreen(onProfileClicked = {})
         }
 
 

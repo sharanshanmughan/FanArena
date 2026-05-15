@@ -1,56 +1,36 @@
 package com.example.jetpacktutorial.core.data.repository
 
-import com.example.jetpacktutorial.core.common.Resource
-import com.example.jetpacktutorial.core.data.model.LeaderboardUser
-import com.example.jetpacktutorial.core.data.model.Prediction
-import com.example.jetpacktutorial.core.data.model.PredictionResult
-import com.example.jetpacktutorial.core.data.remote.firebase.PredictionDataSource
+import com.example.jetpacktutorial.core.data.model.PlayerPredictionOption
+import com.example.jetpacktutorial.core.data.model.PredictionOptionsPayload
+import com.example.jetpacktutorial.feature.prediction.PredictionUiState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
+import java.io.IOException
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class PredictionRepository @Inject constructor(
-    private val predictionDataSource: PredictionDataSource
-) {
+class PredictionRepository @Inject constructor() {
+    fun getPredictionOptions(matchId: String): Flow<PredictionUiState> = flow {
+        emit(PredictionUiState.Loading)
+        try {
+            delay(800) // Fast network simulation
 
-    fun submitPrediction(prediction: Prediction): Flow<Resource<Unit>> = flow {
-        emit(Resource.Loading())
-        predictionDataSource.submitPrediction(prediction)
-            .onSuccess { emit(Resource.Success(Unit)) }
-            .onFailure { emit(Resource.Error(it.message ?: "Failed to submit prediction")) }
-    }
-
-    fun observeUserPredictions(
-        userId: String,
-        matchId: String
-    ): Flow<Resource<List<Prediction>>> {
-        return predictionDataSource
-            .observeUserPredictions(userId, matchId)
-            .map<List<Prediction>, Resource<List<Prediction>>> {
-                Resource.Success(it)
-            }.onStart { emit(Resource.Loading()) }
-            .catch  { emit(Resource.Error(it.message ?: "Failed to observe predictions")) }
-
-    }
-    fun lockPrediction(predictionId: String): Flow<Resource<Unit>> = flow {
-        emit(Resource.Loading())
-        predictionDataSource.lockPrediction(predictionId)
-            .onSuccess { emit(Resource.Success(Unit)) }
-            .onFailure { emit(Resource.Error(it.message ?: "Failed to lock prediction")) }
-    }
-
-    fun getPredictionResults(
-        matchId: String,
-        userId: String
-    ): Flow<Resource<List<PredictionResult>>> = flow {
-        emit(Resource.Loading())
-        runCatching { predictionDataSource.getPredictionResults(matchId, userId) }
-            .onSuccess { emit(Resource.Success(it)) }
-            .onFailure { emit(Resource.Error(it.message ?: "Failed to get results")) }
+            val payload = PredictionOptionsPayload(
+                matchId = matchId,
+                team1Name = "RCB",
+                team2Name = "KKR",
+                topScorerOptions = listOf(
+                    PlayerPredictionOption("p1", "Virat Kohli", "Batsman", "vk_img", "RCB"),
+                    PlayerPredictionOption("p2", "Shubman Gill", "Batsman", "sg_img", "KKR")
+                ),
+                topBowlerOptions = listOf(
+                    PlayerPredictionOption("p3", "Rashid Khan", "Bowler", "rk_img", "RCB"),
+                    PlayerPredictionOption("p4", "Y. Chahal", "Bowler", "yc_img", "KKR")
+                )
+            )
+            emit(PredictionUiState.Success(payload))
+        } catch (e: IOException) {
+            emit(PredictionUiState.Error("Could not retrieve active arena match cards."))
+        }
     }
 }
