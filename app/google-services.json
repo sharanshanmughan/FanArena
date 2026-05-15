@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1048083611126",
+    "project_id": "simpleroomapp-46c79",
+    "storage_bucket": "simpleroomapp-46c79.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1048083611126:android:6dc4c7fd7eea92310cdbd7",
+        "android_client_info": {
+          "package_name": "com.dreamworks.group_chat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOJY_FCRVV7HijKfrBEWHxjnswCPmDDF8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1048083611126:android:6ce6a3c4c33293910cdbd7",
+        "android_client_info": {
+          "package_name": "com.example.jetpacktutorial"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOJY_FCRVV7HijKfrBEWHxjnswCPmDDF8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
