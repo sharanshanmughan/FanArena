@@ -40,28 +40,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.jetpacktutorial.core.data.model.FanPoll
+import com.example.jetpacktutorial.core.data.model.InteractivePollCard
 import com.example.jetpacktutorial.core.data.model.LeaderboardUser
 import com.example.jetpacktutorial.core.data.model.Match
-import com.example.jetpacktutorial.core.data.model.TrendingPrediction
+import com.example.jetpacktutorial.core.data.model.PredictionInsightCard
+import com.example.jetpacktutorial.core.data.model.UserMatchPrediction
+import com.example.jetpacktutorial.core.ui.components.InteractivePollCardRow
+import com.example.jetpacktutorial.core.ui.components.PredictedBadge
+import com.example.jetpacktutorial.core.ui.components.TrendingInsightCard
 import com.example.jetpacktutorial.core.ui.theme.AccentNeonGlow
 import com.example.jetpacktutorial.core.ui.theme.BorderGlass
 import com.example.jetpacktutorial.core.ui.theme.DarkBackground
 import com.example.jetpacktutorial.core.ui.theme.IPLOrangeGradient
 import com.example.jetpacktutorial.core.ui.theme.IPLPurpleGradient
 import com.example.jetpacktutorial.core.ui.theme.SurfaceGlass
-import com.example.jetpacktutorial.navigation.BottomNavItem
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(padding: PaddingValues, switchTab: (String) -> Unit,
-               seeAllTodayMatch: () -> Unit,
-               seeAllTrendingPredictions:()-> Unit,
-               seeAllFanPoll:()-> Unit,
-               seeAllTopMasters:()-> Unit
-               ) {
+fun HomeScreen(
+    padding: PaddingValues,
+    switchTab: (String) -> Unit,
+    onPredictMatch: (String) -> Unit,
+    seeAllTodayMatch: () -> Unit,
+    seeAllTrendingPredictions: () -> Unit,
+    seeAllFanPoll: () -> Unit,
+    seeAllTopMasters: () -> Unit,
+) {
     val viewModel: HomeViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsState()
+    val submittedPredictions by viewModel.submittedPredictions.collectAsState()
+    val arenaPolls by viewModel.arenaPolls.collectAsState()
+    val trendingInsights by viewModel.trendingInsights.collectAsState()
 
     Scaffold(
 
@@ -85,21 +93,18 @@ fun HomeScreen(padding: PaddingValues, switchTab: (String) -> Unit,
                 is HomeUiState.Success -> {
                     HomeScreenContent(
                         matches = currentState.todayMatches,
-                        predictions = currentState.trendingPredictions,
-                        polls = currentState.fanPolls,
+                        trendingInsights = trendingInsights,
+                        arenaPolls = arenaPolls,
                         users = currentState.topUsers,
-                        onPredictionClick = {
-                            switchTab(BottomNavItem.Match.route)
-                        },
-                        seeAllTodayMatch = {seeAllTodayMatch()},
-                        seeAllTrendingPredictions={seeAllTrendingPredictions()},
-                        seeAllFanPoll={
-                            seeAllFanPoll()
-                        },
-                        seeAllTopMasters={
-                            seeAllTopMasters()
-                        }
-
+                        submittedPredictions = submittedPredictions,
+                        onPredictMatch = onPredictMatch,
+                        onPollVote = { pollId, index -> viewModel.submitPollVote(pollId, index) },
+                        onTrendingVote = { id, index -> viewModel.submitTrendingVote(id, index) },
+                        onTrendingMatchPrediction = onPredictMatch,
+                        seeAllTodayMatch = { seeAllTodayMatch() },
+                        seeAllTrendingPredictions = { seeAllTrendingPredictions() },
+                        seeAllFanPoll = { seeAllFanPoll() },
+                        seeAllTopMasters = { seeAllTopMasters() },
                     )
                 }
                 is HomeUiState.Error -> {
@@ -119,14 +124,18 @@ fun ErrorMessage(message: String){
 @Composable
 fun HomeScreenContent(
     matches: List<Match>,
-    predictions: List<TrendingPrediction>,
-    polls: List<FanPoll>,
+    trendingInsights: List<PredictionInsightCard>,
+    arenaPolls: List<InteractivePollCard>,
     users: List<LeaderboardUser>,
-    onPredictionClick: () -> Unit,
+    submittedPredictions: Map<String, UserMatchPrediction>,
+    onPredictMatch: (String) -> Unit,
+    onPollVote: (String, Int) -> Unit,
+    onTrendingVote: (String, Int) -> Unit,
+    onTrendingMatchPrediction: (String) -> Unit,
     seeAllTodayMatch: () -> Unit,
-    seeAllTrendingPredictions:()-> Unit,
+    seeAllTrendingPredictions: () -> Unit,
     seeAllFanPoll: () -> Unit,
-    seeAllTopMasters: () -> Unit
+    seeAllTopMasters: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -136,11 +145,23 @@ fun HomeScreenContent(
         verticalArrangement = Arrangement.spacedBy(24.dp),
 
     ) {
-        TodayMatchesSection(matches, onClick = {onPredictionClick()}, seeAllTodayMatch = {seeAllTodayMatch()})
-        TrendingPredictionsSection(predictions,seeAllTrendingPredictions={
-            seeAllTrendingPredictions()
-        })
-        FanPollsSection(polls,seeAllFanPoll={seeAllFanPoll()})
+        TodayMatchesSection(
+            matches = matches,
+            submittedPredictions = submittedPredictions,
+            onPredictMatch = onPredictMatch,
+            seeAllTodayMatch = { seeAllTodayMatch() },
+        )
+        TrendingPredictionsSection(
+            insights = trendingInsights,
+            onTrendingVote = onTrendingVote,
+            onOpenMatchPrediction = onTrendingMatchPrediction,
+            seeAllTrendingPredictions = { seeAllTrendingPredictions() },
+        )
+        FanPollsSection(
+            polls = arenaPolls,
+            onPollVote = onPollVote,
+            seeAllFanPoll = { seeAllFanPoll() },
+        )
         LeaderboardWidget(users,seeAllTopMasters={seeAllTopMasters()})
         Spacer(modifier = Modifier.height(32.dp))
     }
@@ -152,41 +173,69 @@ fun Modifier.glassmorphicCard(): Modifier = this
     .border(1.dp, BorderGlass, RoundedCornerShape(20.dp))
 
 @Composable
-fun TodayMatchesSection(matches: List<Match>,onClick:()-> Unit,seeAllTodayMatch: () -> Unit) {
-    SectionHeader("Today's Matches",onClick={seeAllTodayMatch()})
+fun TodayMatchesSection(
+    matches: List<Match>,
+    submittedPredictions: Map<String, UserMatchPrediction>,
+    onPredictMatch: (String) -> Unit,
+    seeAllTodayMatch: () -> Unit,
+) {
+    SectionHeader("Today's Matches", onClick = { seeAllTodayMatch() })
     LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        items(matches) { match ->
+        items(matches, key = { it.id }) { match ->
+            val userPrediction = submittedPredictions[match.id]
             Column(
                 modifier = Modifier
                     .width(260.dp)
                     .glassmorphicCard()
                     .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(match.time, color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp)
+                    if (userPrediction != null) {
+                        PredictedBadge()
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     TeamBadge(match.team1)
                     Text("VS", fontWeight = FontWeight.Bold, color = Color.Gray, fontSize = 14.sp)
                     TeamBadge(match.team2)
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(match.time, color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp)
+                if (userPrediction != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        userPrediction.summaryLine(),
+                        color = Color.White.copy(alpha = 0.75f),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                    )
+                }
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Button(
-                    onClick = { onClick() },
+                    onClick = { onPredictMatch(match.id) },
                     modifier = Modifier.fillMaxWidth().height(40.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                    contentPadding = PaddingValues()
+                    contentPadding = PaddingValues(),
                 ) {
                     Box(
                         modifier = Modifier.fillMaxSize().background(IPLOrangeGradient),
-                        contentAlignment = Alignment.Center
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Text("Predict Now", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = if (userPrediction != null) "View prediction" else "Predict now",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                        )
                     }
                 }
             }
@@ -195,59 +244,40 @@ fun TodayMatchesSection(matches: List<Match>,onClick:()-> Unit,seeAllTodayMatch:
 }
 
 @Composable
-fun TrendingPredictionsSection(predictions: List<TrendingPrediction>,seeAllTrendingPredictions:()-> Unit) {
-    SectionHeader("Trending Predictions",onClick={seeAllTrendingPredictions()})
+fun TrendingPredictionsSection(
+    insights: List<PredictionInsightCard>,
+    onTrendingVote: (String, Int) -> Unit,
+    onOpenMatchPrediction: (String) -> Unit,
+    seeAllTrendingPredictions: () -> Unit,
+) {
+    SectionHeader("Trending Predictions", onClick = { seeAllTrendingPredictions() })
     LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        items(predictions) { item ->
-            Row(
-                modifier = Modifier
-                    .width(200.dp)
-                    .glassmorphicCard()
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.1f))
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                Column {
-                    Text(item.category, color = Color.Gray, fontSize = 11.sp)
-                    Text(item.prediction, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                }
-            }
+        items(insights, key = { it.predictionId }) { insight ->
+            TrendingInsightCard(
+                insight = insight,
+                compact = true,
+                onOptionVote = { index -> onTrendingVote(insight.predictionId, index) },
+                onOpenMatchPrediction = insight.matchId?.let { matchId ->
+                    { onOpenMatchPrediction(matchId) }
+                },
+            )
         }
     }
 }
 
 @Composable
-fun FanPollsSection(polls: List<FanPoll>,seeAllFanPoll: () -> Unit) {
-    SectionHeader("Fan Polls",onClick={seeAllFanPoll()})
+fun FanPollsSection(
+    polls: List<InteractivePollCard>,
+    onPollVote: (String, Int) -> Unit,
+    seeAllFanPoll: () -> Unit,
+) {
+    SectionHeader("Fan Polls", onClick = { seeAllFanPoll() })
     polls.forEach { poll ->
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .glassmorphicCard()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Text(poll.question, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            poll.options.forEach { option ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(44.dp)
-                        .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
-                        .clickable { /* Handle Vote action */ }
-                        .padding(horizontal = 16.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    Text(option, color = Color.White.copy(alpha = 0.8f))
-                }
-            }
-        }
+        InteractivePollCardRow(
+            poll = poll,
+            onVoteClicked = { index -> onPollVote(poll.pollId, index) },
+            modifier = Modifier.padding(bottom = 12.dp),
+        )
     }
 }
 

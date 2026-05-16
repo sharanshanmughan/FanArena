@@ -1,42 +1,82 @@
 package com.example.jetpacktutorial.feature.prediction
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.jetpacktutorial.core.data.model.UserMatchPrediction
 import com.example.jetpacktutorial.core.data.repository.PredictionRepository
+import com.example.jetpacktutorial.core.data.repository.SubmittedPredictionsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class PredictionViewModel @Inject constructor(
-     repository: PredictionRepository,
-
+    repository: PredictionRepository,
+    private val submittedPredictionsRepository: SubmittedPredictionsRepository,
+    savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-    val uiState: StateFlow<PredictionUiState> = repository.getPredictionOptions("M_RCB_KKR_01")
+    val matchId: String = savedStateHandle.get<String>("matchId") ?: DEFAULT_MATCH_ID
+
+    val uiState: StateFlow<PredictionUiState> = repository.getPredictionOptions(matchId)
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = PredictionUiState.Loading
+            initialValue = PredictionUiState.Loading,
         )
+
+    val existingPrediction: StateFlow<UserMatchPrediction?> =
+        submittedPredictionsRepository.predictions
+            .map { predictions -> predictions[matchId] }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = submittedPredictionsRepository.getPrediction(matchId),
+            )
 
     private val _submissionResult = MutableSharedFlow<Boolean>()
     val submissionResult: SharedFlow<Boolean> = _submissionResult
 
-    fun submitPredictions(winner: String?, scorerId: String?, bowlerId: String?) {
+    fun submitPredictions(
+        winner: String?,
+        scorerId: String?,
+        scorerName: String?,
+        bowlerId: String?,
+        bowlerName: String?,
+    ) {
         viewModelScope.launch {
-            // Check if all forms are populated before pushing backend tracking updates
-            if (winner != null && scorerId != null && bowlerId != null) {
-                // Mock network post latency
+            if (
+                winner != null &&
+                scorerId != null &&
+                scorerName != null &&
+                bowlerId != null &&
+                bowlerName != null
+            ) {
                 delay(500)
+                submittedPredictionsRepository.save(
+                    UserMatchPrediction(
+                        matchId = matchId,
+                        winnerTeam = winner,
+                        topScorerId = scorerId,
+                        topScorerName = scorerName,
+                        topBowlerId = bowlerId,
+                        topBowlerName = bowlerName,
+                    ),
+                )
                 _submissionResult.emit(true)
             }
         }
+    }
+
+    companion object {
+        const val DEFAULT_MATCH_ID = "M_RCB_KKR_01"
     }
 }

@@ -2,7 +2,6 @@ package com.example.jetpacktutorial.core.data.repository
 
 
 import com.example.jetpacktutorial.core.data.model.Comment
-import com.example.jetpacktutorial.core.data.model.FanPoll
 import com.example.jetpacktutorial.core.data.model.MatchHubDetails
 import com.example.jetpacktutorial.feature.livematch.MatchHubUiState
 import kotlinx.coroutines.delay
@@ -28,15 +27,7 @@ class MatchHubRepository @Inject constructor() {
                 team2Name = "KKR",
                 team2Logo = "kkr_logo",
                 matchStartTimeMillis = targetTime,
-                quickPolls = listOf(
-                    FanPoll("p1", "Who wins the toss?", 12400, listOf("RCB", "KKR")),
-                    FanPoll(
-                        "p2",
-                        "How many maximum sixes will be hit?",
-                        8900,
-                        listOf("0-5", "6-12", "13+")
-                    )
-                ),
+                quickPolls = emptyList(),
                 discussionComments = listOf(
                     Comment(
                         "c1",

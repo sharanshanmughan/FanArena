@@ -4,32 +4,36 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetpacktutorial.core.data.repository.TrendingPredictionsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
 class TrendingPredictionsViewModel @Inject constructor(
-    repository: TrendingPredictionsRepository
+    private val repository: TrendingPredictionsRepository,
 ) : ViewModel() {
 
-    private val _selectedFilter = MutableStateFlow("All")
+    private val _selectedFilter = MutableStateFlow(TrendingPredictionsRepository.FILTER_ALL)
     val selectedFilter: StateFlow<String> = _selectedFilter
 
     val uiState: StateFlow<TrendingPredictionsUiState> = _selectedFilter
-        .flatMapLatest { filter -> repository.getTrendingPredictions(filter) }
+        .flatMapLatest { filter -> repository.observeTrending(filter) }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = TrendingPredictionsUiState.Loading
+            initialValue = TrendingPredictionsUiState.Loading,
         )
 
     fun changeFilter(category: String) {
-        viewModelScope.launch {
-            _selectedFilter.value = category
-        }
+        _selectedFilter.value = category
+    }
+
+    fun submitTrendingVote(predictionId: String, optionIndex: Int) {
+        repository.submitVote(predictionId, optionIndex)
     }
 }

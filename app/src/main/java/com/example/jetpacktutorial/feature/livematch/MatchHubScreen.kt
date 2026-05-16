@@ -15,10 +15,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
@@ -52,8 +52,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.jetpacktutorial.core.data.model.Comment
-import com.example.jetpacktutorial.core.data.model.FanPoll
+import com.example.jetpacktutorial.core.data.model.InteractivePollCard
 import com.example.jetpacktutorial.core.data.model.MatchHubDetails
+import com.example.jetpacktutorial.core.ui.components.InteractivePollCardRow
+import com.example.jetpacktutorial.core.data.model.UserMatchPrediction
+import com.example.jetpacktutorial.core.ui.components.YourPredictionSummary
 import com.example.jetpacktutorial.core.ui.theme.AccentNeonGlow
 import com.example.jetpacktutorial.core.ui.theme.BorderGlass
 import com.example.jetpacktutorial.core.ui.theme.DarkBackground
@@ -66,10 +69,11 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MatchHubScreen( onBackClicked: () -> Unit, onNavigateToPredict: () -> Unit) {
-
+fun MatchHubScreen(onBackClicked: () -> Unit, onNavigateToPredict: (String) -> Unit) {
     val viewModel: MatchHubViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsState()
+    val userPrediction by viewModel.userPrediction.collectAsState()
+    val matchPolls by viewModel.matchPolls.collectAsState()
 
     Scaffold(
         containerColor = DarkBackground,
@@ -97,7 +101,12 @@ fun MatchHubScreen( onBackClicked: () -> Unit, onNavigateToPredict: () -> Unit) 
                 is MatchHubUiState.Success -> {
                     MatchHubContent(
                         details = currentState.data,
-                        onNavigateToPredict = onNavigateToPredict
+                        userPrediction = userPrediction,
+                        matchPolls = matchPolls,
+                        onNavigateToPredict = { onNavigateToPredict(viewModel.matchId) },
+                        onPollVote = { pollId, index ->
+                            viewModel.submitPollVote(pollId, index)
+                        },
                     )
                 }
             }
@@ -106,7 +115,13 @@ fun MatchHubScreen( onBackClicked: () -> Unit, onNavigateToPredict: () -> Unit) 
 }
 
 @Composable
-fun MatchHubContent(details: MatchHubDetails, onNavigateToPredict: () -> Unit) {
+fun MatchHubContent(
+    details: MatchHubDetails,
+    userPrediction: UserMatchPrediction?,
+    matchPolls: List<InteractivePollCard>,
+    onNavigateToPredict: () -> Unit,
+    onPollVote: (String, Int) -> Unit,
+) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Overview", "Polls", "Discussion")
 
@@ -131,21 +146,31 @@ fun MatchHubContent(details: MatchHubDetails, onNavigateToPredict: () -> Unit) {
             // Real-time Countdown Timer
             CountdownWidget(targetTimeMillis = details.matchStartTimeMillis)
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Primary Engagement Prediction Call_to Action Button
+            if (userPrediction != null) {
+                YourPredictionSummary(prediction = userPrediction)
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
             Button(
                 onClick = onNavigateToPredict,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                 shape = RoundedCornerShape(16.dp),
-                contentPadding = PaddingValues()
+                contentPadding = PaddingValues(),
             ) {
                 Box(
                     modifier = Modifier.fillMaxSize().background(IPLOrangeGradient),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Text("MAKE PREDICTIONS", color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp, letterSpacing = 1.sp)
+                    Text(
+                        text = if (userPrediction != null) "VIEW PREDICTION" else "MAKE PREDICTIONS",
+                        color = Color.White,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 16.sp,
+                        letterSpacing = 1.sp,
+                    )
                 }
             }
         }
@@ -173,16 +198,14 @@ fun MatchHubContent(details: MatchHubDetails, onNavigateToPredict: () -> Unit) {
             }
         }
 
-        // Swapping layouts contextually depending on selected tab configuration
         Box(
             modifier = Modifier
-                .fillMaxSize()
                 .weight(1f)
-                .padding(16.dp)
+                .fillMaxWidth()
         ) {
             when (selectedTab) {
                 0 -> MatchOverviewTab()
-                1 -> MatchPollsTab(details.quickPolls)
+                1 -> MatchPollsTab(polls = matchPolls, onPollVote = onPollVote)
                 2 -> MatchDiscussionTab(details.discussionComments)
             }
         }
@@ -219,41 +242,21 @@ fun CountdownWidget(targetTimeMillis: Long) {
 
 @Composable
 fun MatchOverviewTab() {
-    Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Box(modifier = Modifier.fillMaxWidth().glassmorphicCard().padding(16.dp)) {
-            Column {
-                Text("Arena Insight", fontWeight = FontWeight.Bold, color = Color.White)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("84% of arena fans are backing RCB to break their boundary record tonight at this venue.", color = Color.Gray, fontSize = 13.sp)
-            }
-        }
-    }
-}
-
-@Composable
-fun MatchPollsTab(polls: List<FanPoll>) {
-    Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        polls.forEach { poll ->
-            Column(modifier = Modifier.fillMaxWidth().glassmorphicCard().padding(16.dp)) {
-                Text(poll.question, fontWeight = FontWeight.Bold, color = Color.White)
-                Spacer(modifier = Modifier.height(12.dp))
-                poll.options.forEach { option ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .border(1.dp, BorderGlass, RoundedCornerShape(12.dp))
-                            .clickable {}
-                            .padding(12.dp)
-                    ) {
-                        Text(option, color = Color.White.copy(alpha = 0.8f))
-                    }
+        item {
+            Box(modifier = Modifier.fillMaxWidth().glassmorphicCard().padding(16.dp)) {
+                Column {
+                    Text("Arena Insight", fontWeight = FontWeight.Bold, color = Color.White)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "84% of arena fans are backing RCB to break their boundary record tonight at this venue.",
+                        color = Color.Gray,
+                        fontSize = 13.sp,
+                    )
                 }
             }
         }
@@ -261,15 +264,35 @@ fun MatchPollsTab(polls: List<FanPoll>) {
 }
 
 @Composable
-fun MatchDiscussionTab(comments: List<Comment>) {
-    Column(
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+fun MatchPollsTab(
+    polls: List<InteractivePollCard>,
+    onPollVote: (String, Int) -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        comments.forEach { comment ->
+        items(polls, key = { it.pollId }) { poll ->
+            InteractivePollCardRow(
+                poll = poll,
+                onVoteClicked = { index -> onPollVote(poll.pollId, index) },
+            )
+        }
+    }
+}
+
+@Composable
+fun MatchDiscussionTab(comments: List<Comment>) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        items(comments, key = { it.id }) { comment ->
             Row(
                 modifier = Modifier.fillMaxWidth().glassmorphicCard().padding(12.dp),
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.Top,
             ) {
                 Box(modifier = Modifier.size(36.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.1f)))
                 Spacer(modifier = Modifier.width(12.dp))
@@ -278,7 +301,11 @@ fun MatchDiscussionTab(comments: List<Comment>) {
                         Text(comment.username, fontWeight = FontWeight.Bold, color = Color.White, fontSize = 14.sp)
                         comment.supportTeamBadge?.let { badge ->
                             Spacer(modifier = Modifier.width(6.dp))
-                            Box(modifier = Modifier.background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(4.dp)).padding(horizontal = 4.dp, vertical = 2.dp)) {
+                            Box(
+                                modifier = Modifier
+                                    .background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 4.dp, vertical = 2.dp),
+                            ) {
                                 Text(badge, fontSize = 9.sp, color = AccentNeonGlow, fontWeight = FontWeight.Bold)
                             }
                         }

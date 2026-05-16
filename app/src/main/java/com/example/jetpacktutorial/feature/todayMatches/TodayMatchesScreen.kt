@@ -20,7 +20,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -39,6 +43,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.jetpacktutorial.core.data.model.DetailedMatchCard
 import com.example.jetpacktutorial.core.data.model.MatchStatus
+import com.example.jetpacktutorial.core.data.model.UserMatchPrediction
+import com.example.jetpacktutorial.core.ui.components.PredictedBadge
+import com.example.jetpacktutorial.core.ui.components.YourPredictionSummary
 import com.example.jetpacktutorial.core.ui.theme.BorderGlass
 import com.example.jetpacktutorial.core.ui.theme.DarkBackground
 import com.example.jetpacktutorial.core.ui.theme.IPLOrangeGradient
@@ -48,18 +55,38 @@ import com.example.jetpacktutorial.feature.home.glassmorphicCard
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun TodayMatchesScreen( onMatchSelected: (String) -> Unit) {
+fun TodayMatchesScreen(
+    onBackClicked: () -> Unit,
+    onMatchSelected: (String) -> Unit,
+) {
     val viewModel: TodayMatchesViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsState()
+    val submittedPredictions by viewModel.submittedPredictions.collectAsState()
 
     Scaffold(
         containerColor = DarkBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Today's Arena Grid", fontSize = 22.sp, fontWeight = FontWeight.Black, color = Color.White) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                title = {
+                    Text(
+                        "Today's Arena",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White,
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClicked) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White,
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
             )
-        }
+        },
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             // Ambient design asset background glow
@@ -75,7 +102,11 @@ fun TodayMatchesScreen( onMatchSelected: (String) -> Unit) {
                         contentPadding = PaddingValues(bottom = 24.dp)
                     ) {
                         items(currentState.matches, key = { it.matchId }) { match ->
-                            DetailedMatchRowCard(match = match, onClick = { onMatchSelected(match.matchId) })
+                            DetailedMatchRowCard(
+                                match = match,
+                                userPrediction = submittedPredictions[match.matchId],
+                                onClick = { onMatchSelected(match.matchId) },
+                            )
                         }
                     }
                 }
@@ -85,7 +116,11 @@ fun TodayMatchesScreen( onMatchSelected: (String) -> Unit) {
 }
 
 @Composable
-fun DetailedMatchRowCard(match: DetailedMatchCard, onClick: () -> Unit) {
+fun DetailedMatchRowCard(
+    match: DetailedMatchCard,
+    userPrediction: UserMatchPrediction?,
+    onClick: () -> Unit,
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -118,7 +153,17 @@ fun DetailedMatchRowCard(match: DetailedMatchCard, onClick: () -> Unit) {
                     fontSize = 10.sp
                 )
             }
-            Text(match.matchTimeOrScore, color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                if (userPrediction != null) {
+                    PredictedBadge()
+                }
+                Text(
+                    match.matchTimeOrScore,
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -158,6 +203,11 @@ fun DetailedMatchRowCard(match: DetailedMatchCard, onClick: () -> Unit) {
                 Box(modifier = Modifier.fillMaxHeight().weight(match.fanSupportPredictionRatio).background(IPLOrangeGradient))
                 Box(modifier = Modifier.fillMaxHeight().weight(1f - match.fanSupportPredictionRatio).background(IPLPurpleGradient))
             }
+        }
+
+        if (userPrediction != null) {
+            Spacer(modifier = Modifier.height(16.dp))
+            YourPredictionSummary(prediction = userPrediction, compact = true)
         }
     }
 }

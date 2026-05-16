@@ -23,7 +23,9 @@ sealed class Routes(
 
     data object TopMasters : Routes("top_masters")
 
-    data object Prediction : Routes("prediction")
+    data object Prediction : Routes("prediction/{matchId}") {
+        fun createRoute(matchId: String) = "prediction/$matchId"
+    }
 
     data object TodayMatches : Routes("today_matches")
 

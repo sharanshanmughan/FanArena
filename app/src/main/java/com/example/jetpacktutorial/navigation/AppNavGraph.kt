@@ -59,8 +59,8 @@ fun AppNavGraph() {
             val tab = backStackEntry.arguments?.getString("tab")
             DashboardScreen(
                 tab,
-                onNavigateToPredict = {
-                    navController.navigate(Routes.Prediction.route)
+                onNavigateToPredict = { matchId ->
+                    navController.navigate(Routes.Prediction.createRoute(matchId))
                 },
                 onNavigateToTodayMatch = {
                     navController.navigate(Routes.TodayMatches.route)
@@ -77,22 +77,38 @@ fun AppNavGraph() {
             )
         }
 
-        composable(Routes.Prediction.route) {
-            PredictionScreen(onBackClicked = {}, onSubmitComplete = {})
+        composable(
+            route = Routes.Prediction.route,
+            arguments = listOf(
+                navArgument("matchId") { type = NavType.StringType },
+            ),
+        ) {
+            PredictionScreen(
+                onBackClicked = { navController.popBackStack() },
+                onSubmitComplete = { navController.popBackStack() },
+            )
         }
 
         composable(Routes.TodayMatches.route) {
-            TodayMatchesScreen() {
-
-            }
+            TodayMatchesScreen(
+                onBackClicked = { navController.popBackStack() },
+                onMatchSelected = { matchId ->
+                    navController.navigate(Routes.Prediction.createRoute(matchId))
+                },
+            )
         }
 
         composable(Routes.TrendingPrediction.route) {
-            TrendingPredictionsScreen(onPredictionCardClicked = {})
+            TrendingPredictionsScreen(
+                onBackClicked = { navController.popBackStack() },
+                onOpenMatchPrediction = { matchId ->
+                    navController.navigate(Routes.Prediction.createRoute(matchId))
+                },
+            )
         }
 
         composable(Routes.FanPoll.route) {
-            FanPollsScreen()
+            FanPollsScreen(onBackClicked = { navController.popBackStack() })
         }
 
         composable(Routes.TopMasters.route) {

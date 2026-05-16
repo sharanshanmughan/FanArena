@@ -57,7 +57,7 @@ import com.example.jetpacktutorial.navigation.Routes
 @Composable
 fun DashboardScreen(
     tab: String?,
-    onNavigateToPredict: () -> Unit,
+    onNavigateToPredict: (String) -> Unit,
     onNavigateToTodayMatch: () -> Unit,
     onNavigateToTrendingPrediction: () -> Unit,
     onNavigateToFanPoll: () -> Unit,
@@ -91,6 +91,9 @@ fun DashboardScreen(
                         HomeScreen(
                             padding,
                             switchTab,
+                            onPredictMatch = { matchId ->
+                                onNavigateToPredict(matchId)
+                            },
                             seeAllTodayMatch = {
                                 onNavigateToTodayMatch()
                             },
@@ -102,15 +105,18 @@ fun DashboardScreen(
                             },
                             seeAllTopMasters = {
                                 onNavigateTopMasters()
-                            }
+                            },
                         )
                     }
 
                 BottomNavItem.Match.route ->
                     Animation { offset, alpha ->
-                        MatchHubScreen(onBackClicked = {}, onNavigateToPredict = {
-                            onNavigateToPredict()
-                        })
+                        MatchHubScreen(
+                            onBackClicked = {},
+                            onNavigateToPredict = { matchId ->
+                                onNavigateToPredict(matchId)
+                            },
+                        )
                     }
 
                 BottomNavItem.Feed.route ->
