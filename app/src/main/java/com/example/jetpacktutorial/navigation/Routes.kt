@@ -19,6 +19,12 @@ sealed class Routes(
     data object Leaderboard :
         Routes("leaderboard")
 
+    data object TeamProfile :
+        Routes("team_profile/{teamId}") {
+            fun createRoute(teamId: String) = "team_profile/$teamId"
+        }
+
+
     data object Profile : Routes("profile")
 
     data object TopMasters : Routes("top_masters")

@@ -44,14 +44,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.example.jetpacktutorial.feature.feed.FanFeedScreen
 import com.example.jetpacktutorial.feature.home.HomeScreen
 import com.example.jetpacktutorial.feature.leaderboard.LeaderboardScreen
 import com.example.jetpacktutorial.feature.livematch.MatchHubScreen
 import com.example.jetpacktutorial.feature.teams.TeamScreen
 import com.example.jetpacktutorial.navigation.BottomNavItem
-import com.example.jetpacktutorial.navigation.Routes
 
 
 @Composable
@@ -61,7 +59,8 @@ fun DashboardScreen(
     onNavigateToTodayMatch: () -> Unit,
     onNavigateToTrendingPrediction: () -> Unit,
     onNavigateToFanPoll: () -> Unit,
-    onNavigateTopMasters:()-> Unit
+    onNavigateTopMasters:()-> Unit,
+    onNavigateToTeamProfile: (String) -> Unit,
 ) {
 
 
@@ -116,6 +115,7 @@ fun DashboardScreen(
                             onNavigateToPredict = { matchId ->
                                 onNavigateToPredict(matchId)
                             },
+                            padding = padding
                         )
                     }
 
@@ -131,7 +131,9 @@ fun DashboardScreen(
 
                 BottomNavItem.Team.route ->
                     Animation { offset, alpha ->
-                        TeamScreen(onTeamSelected = {})
+                        TeamScreen(onTeamSelected = {
+                            onNavigateToTeamProfile(it)
+                        })
                     }
 
 

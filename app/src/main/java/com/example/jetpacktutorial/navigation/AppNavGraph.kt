@@ -12,6 +12,7 @@ import com.example.jetpacktutorial.feature.dashboard.DashboardScreen
 import com.example.jetpacktutorial.feature.fanPoll.FanPollsScreen
 import com.example.jetpacktutorial.feature.prediction.PredictionScreen
 import com.example.jetpacktutorial.feature.spash.SplashScreen
+import com.example.jetpacktutorial.feature.teams.teamProfile.TeamProfileScreen
 import com.example.jetpacktutorial.feature.todayMatches.TodayMatchesScreen
 import com.example.jetpacktutorial.feature.trendingPrediction.TrendingPredictionsScreen
 
@@ -73,7 +74,10 @@ fun AppNavGraph() {
                 },
                 onNavigateTopMasters = {
                     navController.navigate(Routes.TopMasters.route)
-                }
+                },
+                onNavigateToTeamProfile = { teamId ->
+                    navController.navigate(Routes.TeamProfile.createRoute(teamId))
+                },
             )
         }
 
@@ -113,6 +117,22 @@ fun AppNavGraph() {
 
         composable(Routes.TopMasters.route) {
             TopMastersScreen(onProfileClicked = {})
+        }
+
+        composable(
+            route = Routes.TeamProfile.route, // Evaluates cleanly to "team_profile/{team_id}"
+            arguments = listOf(
+                navArgument("teamId") { // Match the underscore notation from your Routes configuration
+                    type = NavType.StringType
+                }
+            )
+        ) {
+            // Render your production decoupled profile screen component structure
+            TeamProfileScreen(
+                onBackClicked = {
+                    navController.popBackStack()
+                }
+            )
         }
 
 
