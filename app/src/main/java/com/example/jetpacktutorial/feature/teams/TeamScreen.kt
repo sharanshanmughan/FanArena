@@ -48,11 +48,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TeamScreen( onTeamSelected: (String) -> Unit) {
+fun TeamScreen(onTeamSelected: (String) -> Unit, padding: PaddingValues) {
    val viewModel: TeamsViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsState()
 
     Scaffold(
+        modifier = Modifier.fillMaxSize()
+            .background(DarkBackground)
+            .padding(bottom = padding.calculateBottomPadding()*.6f),
         containerColor = DarkBackground,
         topBar = {
             TopAppBar(

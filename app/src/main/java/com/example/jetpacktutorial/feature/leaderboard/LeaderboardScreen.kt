@@ -51,12 +51,15 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LeaderboardScreen() {
+fun LeaderboardScreen(padding: PaddingValues) {
     val viewModel: LeaderboardViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsState()
     val activeTab by viewModel.currentTab.collectAsState()
 
     Scaffold(
+        modifier = Modifier.fillMaxSize()
+            .background(DarkBackground)
+            .padding(bottom = padding.calculateBottomPadding()*.6f),
         containerColor = DarkBackground,
         topBar = {
             TopAppBar(

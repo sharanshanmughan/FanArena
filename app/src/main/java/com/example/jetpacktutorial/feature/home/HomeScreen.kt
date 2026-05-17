@@ -72,7 +72,9 @@ fun HomeScreen(
     val trendingInsights by viewModel.trendingInsights.collectAsState()
 
     Scaffold(
-
+        modifier = Modifier.fillMaxSize()
+            .background(DarkBackground)
+            .padding(bottom = padding.calculateBottomPadding()*.6f),
         containerColor = DarkBackground,
         topBar = {
             TopAppBar(

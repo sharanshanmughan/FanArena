@@ -1,5 +1,6 @@
 package com.example.jetpacktutorial.feature.dashboard
 
+import FanFeedScreen
 import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Spring
@@ -44,7 +45,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.jetpacktutorial.feature.feed.FanFeedScreen
+
 import com.example.jetpacktutorial.feature.home.HomeScreen
 import com.example.jetpacktutorial.feature.leaderboard.LeaderboardScreen
 import com.example.jetpacktutorial.feature.livematch.MatchHubScreen
@@ -121,19 +122,19 @@ fun DashboardScreen(
 
                 BottomNavItem.Feed.route ->
                     Animation { offset, alpha ->
-                        FanFeedScreen()
+                        FanFeedScreen(padding = padding)
                     }
 
                 BottomNavItem.Leaderboard.route ->
                     Animation { offset, alpha ->
-                        LeaderboardScreen()
+                        LeaderboardScreen(padding)
                     }
 
                 BottomNavItem.Team.route ->
                     Animation { offset, alpha ->
                         TeamScreen(onTeamSelected = {
                             onNavigateToTeamProfile(it)
-                        })
+                        },padding)
                     }
 
 

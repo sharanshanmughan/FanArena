@@ -1,3 +1,5 @@
+
+
 package com.example.jetpacktutorial.feature.livematch
 
 import androidx.compose.foundation.background
@@ -111,7 +113,7 @@ fun MatchHubScreen(
     ) { paddingValues ->
         Box(
             modifier = Modifier
-                .padding(bottom = padding.calculateBottomPadding()*.8f)
+                .padding(bottom = padding.calculateBottomPadding() * 0.8f)
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
@@ -157,130 +159,290 @@ fun MatchHubContent(
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Overview", "Polls", "Discussion")
 
-    // Local mutable data holder to append discussion stream posts seamlessly inside the view layout
     var liveCommentsList by remember(details.discussionComments) { mutableStateOf(details.discussionComments) }
+    var messageText by remember { mutableStateOf("") }
+    val listState = rememberLazyListState()
+
+    // Automatically snaps views downward whenever a comment arrives
+    LaunchedEffect(key1 = liveCommentsList.size) {
+        if (liveCommentsList.isNotEmpty() && selectedTab == 2) {
+            listState.animateScrollToItem(liveCommentsList.size + 1) // +2 offsets for headers layout items
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HubTeamBadge(details.team1Name)
-                Text(
-                    "VS",
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Black,
-                    color = Color.White.copy(alpha = 0.4f)
-                )
-                HubTeamBadge(details.team2Name)
-            }
 
-            CountdownWidget(targetTimeMillis = details.matchStartTimeMillis)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (userPrediction != null) {
-                YourPredictionSummary(prediction = userPrediction)
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            Button(
-                onClick = onNavigateToPredict,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                shape = RoundedCornerShape(16.dp),
-                contentPadding = PaddingValues(),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(IPLOrangeGradient),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = if (userPrediction != null) "VIEW PREDICTION" else "MAKE PREDICTIONS",
-                        color = Color.White,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 16.sp,
-                        letterSpacing = 1.sp,
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        TabRow(
-            selectedTabIndex = selectedTab,
-            containerColor = Color.Transparent,
-            contentColor = Color.White,
-            indicator = { tabPositions ->
-                TabRowDefaults.SecondaryIndicator(
-                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                    color = Color(0xFFFF5722)
-                )
-            }
-        ) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTab == index,
-                    onClick = { selectedTab = index },
-                    text = { Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp) }
-                )
-            }
-        }
-
-        Box(
+        // SINGLE MASTER TIMELINE SCROLL LOOP
+        LazyColumn(
+            state = listState,
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            contentPadding = PaddingValues(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // ITEM 1: Massive Stat Header Modules. Will scroll out of view nicely.
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        HubTeamBadge(details.team1Name)
+                        Text(
+                            "VS",
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White.copy(alpha = 0.4f)
+                        )
+                        HubTeamBadge(details.team2Name)
+                    }
+
+                    CountdownWidget(targetTimeMillis = details.matchStartTimeMillis)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    if (userPrediction != null) {
+                        YourPredictionSummary(prediction = userPrediction)
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+
+                    Button(
+                        onClick = onNavigateToPredict,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                        shape = RoundedCornerShape(16.dp),
+                        contentPadding = PaddingValues(),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(IPLOrangeGradient),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = if (userPrediction != null) "VIEW PREDICTION" else "MAKE PREDICTIONS",
+                                color = Color.White,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 16.sp,
+                                letterSpacing = 1.sp,
+                            )
+                        }
+                    }
+                }
+            }
+
+            // ITEM 2: Content Segment Control Tab row bar section
+            item {
+                TabRow(
+                    selectedTabIndex = selectedTab,
+                    containerColor = Color.Transparent,
+                    contentColor = Color.White,
+                    indicator = { tabPositions ->
+                        TabRowDefaults.SecondaryIndicator(
+                            modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                            color = Color(0xFFFF5722)
+                        )
+                    }
+                ) {
+                    tabs.forEachIndexed { index, title ->
+                        Tab(
+                            selected = selectedTab == index,
+                            onClick = { selectedTab = index },
+                            text = { Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp) }
+                        )
+                    }
+                }
+            }
+
+            // ITEM 3: Dynamic multi-conditional context sub-element inject streams
             when (selectedTab) {
-                0 -> {
+                0 -> { // OVERVIEW CARD TAB LAYOUT
                     val topPoll = matchPolls.firstOrNull()
                     val dynamicInsightText =
                         if (topPoll != null && topPoll.voteDistribution.isNotEmpty()) {
                             val highestVotePct = topPoll.voteDistribution.maxOrNull() ?: 0
-                            val leadingOptionIndex =
-                                topPoll.voteDistribution.indexOf(highestVotePct)
-                            val leadingOptionName =
-                                topPoll.optionsList.getOrNull(leadingOptionIndex) ?: "one side"
+                            val leadingOptionIndex = topPoll.voteDistribution.indexOf(highestVotePct)
+                            val leadingOptionName = topPoll.optionsList.getOrNull(leadingOptionIndex) ?: "one side"
 
                             "$highestVotePct% of live arena fans are confidently predicting: '$leadingOptionName' in response to '${topPoll.question}'."
                         } else {
                             "84% of arena fans are backing ${details.team1Name} to break their boundary record tonight at this venue."
                         }
 
-                    MatchOverviewTab(arenaInsightText = dynamicInsightText)
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .glassmorphicCard()
+                                .padding(16.dp)
+                        ) {
+                            Column {
+                                Text("Arena Insight", fontWeight = FontWeight.Bold, color = Color.White)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = dynamicInsightText,
+                                    color = Color.Gray,
+                                    fontSize = 13.sp,
+                                    lineHeight = 18.sp
+                                )
+                            }
+                        }
+                    }
                 }
 
-                1 -> MatchPollsTab(polls = matchPolls, onPollVote = onPollVote)
-                2 -> {
-                    MatchDiscussionTab(
-                        comments = liveCommentsList,
-                        onSendMessage = { text ->
-                            val userPostItem = Comment(
-                                id = java.util.UUID.randomUUID().toString(),
-                                username = "You (Arena Fan)",
-                                text = text,
-                                avatarUrl = "",
-                                timestamp = "Just Now",
-                                supportTeamBadge = details.team1Name.take(3).uppercase()
+                1 -> { // POLLS COLLECTION ROW ITEMS
+                    items(matchPolls, key = { it.pollId }) { poll ->
+                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            InteractivePollCardRow(
+                                poll = poll,
+                                onVoteClicked = { index -> onPollVote(poll.pollId, index) },
                             )
-                            liveCommentsList = liveCommentsList + userPostItem
                         }
+                    }
+                }
+
+                2 -> { // DISCUSSION GROUPED MESSAGES ITEMS
+                    items(liveCommentsList, key = { it.id }) { comment ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .glassmorphicCard()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.Top,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.1f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    comment.username.take(1),
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        comment.username,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        fontSize = 14.sp
+                                    )
+                                    comment.supportTeamBadge?.let { badge ->
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Box(
+                                            modifier = Modifier
+                                                .background(
+                                                    Color.White.copy(alpha = 0.15f),
+                                                    RoundedCornerShape(4.dp)
+                                                )
+                                                .padding(horizontal = 4.dp, vertical = 2.dp),
+                                        ) {
+                                            Text(
+                                                badge,
+                                                fontSize = 9.sp,
+                                                color = AccentNeonGlow,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    Text(comment.timestamp, color = Color.Gray, fontSize = 11.sp)
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(comment.text, color = Color.White.copy(alpha = 0.8f), fontSize = 13.sp)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // FOOTER TEXT-FIELD OVERLAY STRIP (Renders smoothly under tab 2 context focus)
+        if (selectedTab == 2) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.Transparent,
+                tonalElevation = 8.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    TextField(
+                        value = messageText,
+                        onValueChange = { messageText = it },
+                        modifier = Modifier
+                            .weight(1f)
+                            .border(1.dp, BorderGlass, RoundedCornerShape(24.dp))
+                            .clip(RoundedCornerShape(24.dp)),
+                        placeholder = {
+                            Text(
+                                "Send banter to the arena...",
+                                color = Color.Gray,
+                                fontSize = 14.sp
+                            )
+                        },
+                        singleLine = true,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = SurfaceGlass,
+                            unfocusedContainerColor = SurfaceGlass.copy(alpha = 0.6f),
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        )
                     )
+
+                    val canSend = messageText.isNotBlank()
+                    IconButton(
+                        onClick = {
+                            if (canSend) {
+                                val userPostItem = Comment(
+                                    id = java.util.UUID.randomUUID().toString(),
+                                    username = "You (Arena Fan)",
+                                    text = messageText.trim(),
+                                    avatarUrl = "",
+                                    timestamp = "Just Now",
+                                    supportTeamBadge = details.team1Name.take(3).uppercase()
+                                )
+                                liveCommentsList = liveCommentsList + userPostItem
+                                messageText = ""
+                            }
+                        },
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(if (canSend) Color(0xFFFF5722) else Color.White.copy(alpha = 0.05f))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Send,
+                            contentDescription = "Send Message",
+                            tint = if (canSend) Color.White else Color.Gray,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }
@@ -321,205 +483,6 @@ fun CountdownWidget(targetTimeMillis: Long) {
 }
 
 @Composable
-fun MatchOverviewTab(arenaInsightText: String) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        item {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .glassmorphicCard()
-                    .padding(16.dp)
-            ) {
-                Column {
-                    Text("Arena Insight", fontWeight = FontWeight.Bold, color = Color.White)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = arenaInsightText,
-                        color = Color.Gray,
-                        fontSize = 13.sp,
-                        lineHeight = 18.sp
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun MatchPollsTab(
-    polls: List<InteractivePollCard>,
-    onPollVote: (String, Int) -> Unit,
-) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        items(polls, key = { it.pollId }) { poll ->
-            InteractivePollCardRow(
-                poll = poll,
-                onVoteClicked = { index -> onPollVote(poll.pollId, index) },
-            )
-        }
-    }
-}
-
-@Composable
-fun MatchDiscussionTab(
-    comments: List<Comment>,
-    onSendMessage: (String) -> Unit
-) {
-    var messageText by remember { mutableStateOf("") }
-    val listState = rememberLazyListState()
-
-    // Smoothly scroll down to show the message when a user hits send
-    LaunchedEffect(key1 = comments.size) {
-        if (comments.isNotEmpty()) {
-            listState.animateScrollToItem(comments.lastIndex)
-        }
-    }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                top = 16.dp,
-                bottom = 60.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            items(comments, key = { it.id }) { comment ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .glassmorphicCard()
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.1f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            comment.username.take(1),
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                comment.username,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                fontSize = 14.sp
-                            )
-                            comment.supportTeamBadge?.let { badge ->
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .background(
-                                            Color(0xFFFF5722).copy(alpha = 0.15f),
-                                            RoundedCornerShape(4.dp)
-                                        )
-                                        .padding(horizontal = 5.dp, vertical = 2.dp),
-                                ) {
-                                    Text(
-                                        badge,
-                                        fontSize = 9.sp,
-                                        color = Color.White,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                            Spacer(modifier = Modifier.weight(1f))
-                            Text(comment.timestamp, color = Color.Gray, fontSize = 11.sp)
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(comment.text, color = Color.White.copy(alpha = 0.8f), fontSize = 13.sp)
-                    }
-                }
-            }
-        }
-
-        // Anchored Message Input Panel Strip
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = Color.Transparent,
-            tonalElevation = 8.dp
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                TextField(
-                    value = messageText,
-                    onValueChange = { messageText = it },
-                    modifier = Modifier
-                        .weight(1f)
-                        .border(1.dp, BorderGlass, RoundedCornerShape(24.dp))
-                        .clip(RoundedCornerShape(24.dp)),
-                    placeholder = {
-                        Text(
-                            "Send banter to the arena...",
-                            color = Color.Gray,
-                            fontSize = 14.sp
-                        )
-                    },
-                    singleLine = true,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = SurfaceGlass,
-                        unfocusedContainerColor = SurfaceGlass.copy(alpha = 0.6f),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White
-                    )
-                )
-
-                val canSend = messageText.isNotBlank()
-                IconButton(
-                    onClick = {
-                        if (canSend) {
-                            onSendMessage(messageText.trim())
-                            messageText = ""
-                        }
-                    },
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(if (canSend) Color(0xFFFF5722) else Color.White.copy(alpha = 0.05f))
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Send,
-                        contentDescription = "Send Message",
-                        tint = if (canSend) Color.White else Color.Gray,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun HubTeamBadge(name: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
@@ -534,3 +497,4 @@ fun HubTeamBadge(name: String) {
         }
     }
 }
+

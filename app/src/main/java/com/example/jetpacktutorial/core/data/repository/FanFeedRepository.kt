@@ -5,16 +5,25 @@ import com.example.jetpacktutorial.core.data.model.FeedType
 import com.example.jetpacktutorial.feature.feed.FanFeedUiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import java.io.IOException
 import javax.inject.Inject
 
 class FanFeedRepository @Inject constructor() {
+
+    // Holding hub for dynamic user-generated posts
+    private val customUserFeeds = MutableStateFlow<List<FeedItem>>(emptyList())
+
     fun getFanFeed(): Flow<FanFeedUiState> = flow {
+        // Step 1: Immediately emit the initial Loading state
         emit(FanFeedUiState.Loading)
+
         try {
             delay(1100) // Network latency simulation
 
+            // Step 2: Establish base static feeds
             val mockFeed = listOf(
                 FeedItem(
                     id = "feed_1",
@@ -51,9 +60,21 @@ class FanFeedRepository @Inject constructor() {
                     commentsCount = 1150
                 )
             )
-            emit(FanFeedUiState.Success(mockFeed))
+
+            // Step 3: CRITICAL FIX — Combine our static feeds with the dynamic custom state flow stream!
+            // Every time customUserFeeds changes, this combine block triggers and emits a brand-new Success state wrapper.
+            customUserFeeds.collect { customList ->
+                val combinedList = customList + mockFeed
+                emit(FanFeedUiState.Success(combinedList))
+            }
+
         } catch (e: IOException) {
             emit(FanFeedUiState.Error("Failed to update Fan Feed engine parameters."))
         }
+    }
+
+    fun addNewFeedItem(newItem: FeedItem) {
+        // Prepends newly created custom posts instantly right above the base items sequence
+        customUserFeeds.value = listOf(newItem) + customUserFeeds.value
     }
 }
