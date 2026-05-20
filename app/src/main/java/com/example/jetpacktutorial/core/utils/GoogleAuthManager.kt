@@ -7,6 +7,7 @@ import androidx.credentials.GetCredentialRequest
 import com.example.jetpacktutorial.BuildConfig
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import java.io.IOException
 import javax.inject.Inject
 
 class GoogleAuthManager @Inject constructor() {
@@ -55,6 +56,25 @@ class GoogleAuthManager @Inject constructor() {
         } else {
 
             error("Google credential failed")
+        }
+    }.recoverCatching { throwable ->
+        throw IOException(mapGoogleSignInError(throwable), throwable)
+    }
+
+    private fun mapGoogleSignInError(throwable: Throwable): String {
+        val message = throwable.message.orEmpty()
+        return when {
+            throwable is SecurityException ||
+                message.contains("Unknown calling package name", ignoreCase = true) ||
+                message.contains("Failed to get service from broker", ignoreCase = true) ->
+                "Google Play Services is unavailable. Use an emulator or device with the " +
+                    "Google Play Store, update Google Play Services, then try again. " +
+                    "You can use Guest sign-in to test Firestore in the meantime."
+
+            message.contains("NETWORK_ERROR", ignoreCase = true) ->
+                "Network error during Google sign-in. Check your connection."
+
+            else -> throwable.message ?: "Google sign-in failed"
         }
     }
 }

@@ -1,0 +1,58 @@
+{
+  "match_1": {
+    "team1": "RCB",
+    "team1Logo": "rcb_logo",
+    "team1Name": "Royal Challengers Bengaluru",
+    "team2": "MI",
+    "team2Logo": "mi_logo",
+    "team2Name": "Mumbai Indians",
+    "time": "7:30 PM",
+    "matchTimeOrScore": "Starts at 7:30 PM",
+    "status": "UPCOMING",
+    "showOnHome": true,
+    "fanSupportPredictionRatio": 0.64,
+    "sortOrder": 1
+  },
+  "match_2": {
+    "team1": "CSK",
+    "team1Logo": "csk_logo",
+    "team1Name": "Chennai Super Kings",
+    "team2": "KKR",
+    "team2Logo": "kkr_logo",
+    "team2Name": "Kolkata Knight Riders",
+    "time": "7:30 PM",
+    "matchTimeOrScore": "Starts at 7:30 PM",
+    "status": "UPCOMING",
+    "showOnHome": true,
+    "fanSupportPredictionRatio": 0.55,
+    "sortOrder": 2
+  },
+  "match_3": {
+    "team1": "MI",
+    "team1Logo": "mi_logo",
+    "team1Name": "Mumbai Indians",
+    "team2": "CSK",
+    "team2Logo": "csk_logo",
+    "team2Name": "Chennai Super Kings",
+    "time": "",
+    "matchTimeOrScore": "MI: 164/4 (16.2) • CSK chasing",
+    "status": "LIVE",
+    "showOnHome": false,
+    "fanSupportPredictionRatio": 0.48,
+    "sortOrder": 3
+  },
+  "match_4": {
+    "team1": "SRH",
+    "team1Logo": "srh_logo",
+    "team1Name": "Sunrisers Hyderabad",
+    "team2": "DC",
+    "team2Logo": "dc_logo",
+    "team2Name": "Delhi Capitals",
+    "time": "",
+    "matchTimeOrScore": "SRH won by 24 runs",
+    "status": "COMPLETED",
+    "showOnHome": false,
+    "fanSupportPredictionRatio": 0.7,
+    "sortOrder": 4
+  }
+}
