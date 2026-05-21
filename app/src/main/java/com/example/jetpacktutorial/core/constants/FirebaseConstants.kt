@@ -6,6 +6,7 @@ object FirebaseConstants {
     const val USERS_COLLECTION                 = "users"
     const val MATCHES_COLLECTION               = "matches"
     const val PREDICTIONS_COLLECTION           = "predictions"
+    const val TRENDING_PREDICTIONS_COLLECTION  = "trending_predictions"
     const val PREDICTION_RESULTS_COLLECTION    = "predictionResults"
     const val POLL_VOTES_COLLECTION            = "pollVotes"
     const val LEADERBOARD_GLOBAL_COLLECTION    = "leaderboard_global"
@@ -20,6 +21,24 @@ object FirebaseConstants {
     const val HOME_MATCHES_LIMIT       = 5L
     const val HOME_TOP_USERS_LIMIT     = 3L
     const val TODAY_MATCHES_LIMIT      = 20L
+
+    // ── Trending predictions ────────────────────────────────────────────────────
+    const val TRENDING_FIELD_IS_ACTIVE = "isActive"
+    const val TRENDING_FIELD_SORT_ORDER = "sortOrder"
+    const val TRENDING_PREDICTIONS_LIMIT = 20L
+
+    // ── Fan polls ─────────────────────────────────────────────────────────────
+    const val FAN_POLLS_COLLECTION       = "fan_polls"
+    const val FAN_POLL_FIELD_IS_ACTIVE   = "isActive"
+    const val FAN_POLL_FIELD_SORT_ORDER  = "sortOrder"
+    const val FAN_POLLS_LIMIT            = 30L
+
+    // ── Match hub live discussion ───────────────────────────────────────────────
+    const val MATCH_DISCUSSIONS_COLLECTION = "match_discussions"
+    const val DISCUSSION_COMMENTS_SUBCOLLECTION = "comments"
+    const val DISCUSSION_FIELD_CREATED_AT = "createdAt"
+    const val DISCUSSION_COMMENTS_LIMIT = 100L
+    const val DISCUSSION_MAX_TEXT_LENGTH = 500
 
     // ── Realtime Database Nodes ───────────────────────────────────────────────
     const val LIVE_SCORES_NODE   = "liveScores"

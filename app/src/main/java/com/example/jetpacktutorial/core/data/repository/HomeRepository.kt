@@ -1,6 +1,5 @@
 package com.example.jetpacktutorial.core.data.repository
 
-import android.util.Log
 import com.example.jetpacktutorial.core.data.remote.firebase.MatchesFirestoreDataSource
 import com.example.jetpacktutorial.feature.home.HomeUiState
 import kotlinx.coroutines.flow.Flow
@@ -15,9 +14,7 @@ class HomeRepository @Inject constructor(
 
         try {
             val matches = matchesFirestoreDataSource.getHomeMatches()
-            Log.e("FirestoreError", "Fetch operation failed details: ${matches.size} ")
             val topUsers = matchesFirestoreDataSource.getTopLeaderboardUsers()
-            Log.e("FirestoreError", "Fetch operation failed details: ${topUsers.size}")
             emit(
                 HomeUiState.Success(
                     todayMatches = matches,

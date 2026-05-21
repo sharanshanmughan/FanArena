@@ -1,0 +1,50 @@
+{
+  "TP_01": {
+    "category": "Match Multiplier",
+    "question": "Which team will score more than 70 runs in their Powerplay?",
+    "option1Name": "SRH Arena",
+    "option2Name": "MI Camp",
+    "voteCount1": 65970,
+    "voteCount2": 23130,
+    "trendingTag": "🔥 ACCELERATING",
+    "matchId": "",
+    "sortOrder": 1,
+    "isActive": true
+  },
+  "TP_02": {
+    "category": "Player Performance",
+    "question": "Who will pick up more wickets during death overs tonight?",
+    "option1Name": "J. Bumrah",
+    "option2Name": "P. Cummins",
+    "voteCount1": 68320,
+    "voteCount2": 43680,
+    "trendingTag": "👑 HEAD-TO-HEAD",
+    "matchId": "",
+    "sortOrder": 2,
+    "isActive": true
+  },
+  "TP_03": {
+    "category": "Boundaries",
+    "question": "Total match sixes boundary count estimation baseline:",
+    "option1Name": "Over 15.5 Sixes",
+    "option2Name": "Under 15.5 Sixes",
+    "voteCount1": 18810,
+    "voteCount2": 15390,
+    "trendingTag": null,
+    "matchId": "",
+    "sortOrder": 3,
+    "isActive": true
+  },
+  "TP_MATCH": {
+    "category": "Match Multiplier",
+    "question": "Who wins tonight — RCB or KKR?",
+    "option1Name": "RCB",
+    "option2Name": "KKR",
+    "voteCount1": 52400,
+    "voteCount2": 36600,
+    "trendingTag": "🏟 MATCH NIGHT",
+    "matchId": "M_RCB_KKR_01",
+    "sortOrder": 4,
+    "isActive": true
+  }
+}

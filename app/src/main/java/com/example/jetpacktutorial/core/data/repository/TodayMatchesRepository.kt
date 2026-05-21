@@ -14,7 +14,15 @@ class TodayMatchesRepository @Inject constructor(
 
         try {
             val matches = matchesFirestoreDataSource.getTodayMatches()
-            emit(TodayMatchesUiState.Success(matches))
+            if (matches.isEmpty()) {
+                emit(
+                    TodayMatchesUiState.Error(
+                        "No matches found. Add documents to the matches collection in Firestore.",
+                    ),
+                )
+            } else {
+                emit(TodayMatchesUiState.Success(matches))
+            }
         } catch (e: Exception) {
             emit(
                 TodayMatchesUiState.Error(

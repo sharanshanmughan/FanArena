@@ -1,0 +1,38 @@
+{
+  "FP_101": {
+    "question": "Will MSD push himself up the batting order during run chases this week?",
+    "category": "Thala Corner",
+    "options": ["Yes, definitely needed", "No, stay at No. 8", "Depends on required run rate"],
+    "voteCounts": [139200, 33600, 67200],
+    "matchId": "",
+    "sortOrder": 1,
+    "isActive": true
+  },
+  "FP_102": {
+    "question": "Should RCB bench an overseas batsman to bring in an extra specialist death bowler?",
+    "category": "Squad Strategy",
+    "options": ["Yes, bowling is leaking runs", "No, back the batting line-up"],
+    "voteCounts": [82080, 31920],
+    "matchId": "",
+    "sortOrder": 2,
+    "isActive": true
+  },
+  "MH_p1": {
+    "question": "Who wins the toss?",
+    "category": "Match Hub",
+    "options": ["RCB", "KKR"],
+    "voteCounts": [7440, 4960],
+    "matchId": "M_RCB_KKR_01",
+    "sortOrder": 3,
+    "isActive": true
+  },
+  "MH_p2": {
+    "question": "How many maximum sixes will be hit?",
+    "category": "Match Hub",
+    "options": ["0-5", "6-12", "13+"],
+    "voteCounts": [2670, 4450, 1780],
+    "matchId": "M_RCB_KKR_01",
+    "sortOrder": 4,
+    "isActive": true
+  }
+}

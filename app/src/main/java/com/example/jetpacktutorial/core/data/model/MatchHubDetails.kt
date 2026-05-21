@@ -9,6 +9,5 @@ data class MatchHubDetails(
     val team2Name: String,
     val team2Logo: String,
     val matchStartTimeMillis: Long, // Epoch timestamp for the countdown timer
-    val quickPolls: List<FanPoll>,
-    val discussionComments: List<Comment>
+    val quickPolls: List<FanPoll> = emptyList(),
 ) : Serializable

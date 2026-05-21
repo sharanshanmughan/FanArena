@@ -1,7 +1,9 @@
 package com.example.jetpacktutorial.core.data.model
 
 import com.google.firebase.firestore.DocumentId
+import com.google.firebase.firestore.IgnoreExtraProperties
 
+@IgnoreExtraProperties
 data class Match(
     @DocumentId
     val id: String = "",
@@ -19,6 +21,6 @@ data class Match(
     /** When true, the match appears on the Home screen carousel. */
     val showOnHome: Boolean = true,
     val fanSupportPredictionRatio: Double = 0.5,
-    /** Lower values appear first on Today's Matches. */
-    val sortOrder: Int = 0,
+    /** Lower values appear first on Today's Matches. Stored as number in Firestore. */
+    val sortOrder: Long = 0L,
 )

@@ -4,6 +4,7 @@ package com.example.jetpacktutorial.feature.livematch
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -85,6 +86,8 @@ fun MatchHubScreen(
     val state by viewModel.uiState.collectAsState()
     val userPrediction by viewModel.userPrediction.collectAsState()
     val matchPolls by viewModel.matchPolls.collectAsState()
+    val discussionComments by viewModel.discussionComments.collectAsState()
+    val discussionPostState by viewModel.discussionPostState.collectAsState()
 
     Scaffold(
         containerColor = DarkBackground,
@@ -137,10 +140,16 @@ fun MatchHubScreen(
                         details = currentState.data,
                         userPrediction = userPrediction,
                         matchPolls = matchPolls,
+                        discussionComments = discussionComments,
+                        discussionPostState = discussionPostState,
                         onNavigateToPredict = { onNavigateToPredict(viewModel.matchId) },
                         onPollVote = { pollId, index ->
                             viewModel.submitPollVote(pollId, index)
                         },
+                        onPostComment = { text, teamBadge ->
+                            viewModel.postDiscussionComment(text, teamBadge)
+                        },
+                        onDismissPostError = { viewModel.clearDiscussionPostError() },
                     )
                 }
             }
@@ -153,20 +162,29 @@ fun MatchHubContent(
     details: MatchHubDetails,
     userPrediction: UserMatchPrediction?,
     matchPolls: List<InteractivePollCard>,
+    discussionComments: List<Comment>,
+    discussionPostState: DiscussionPostState,
     onNavigateToPredict: () -> Unit,
     onPollVote: (String, Int) -> Unit,
+    onPostComment: (String, String) -> Unit,
+    onDismissPostError: () -> Unit,
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Overview", "Polls", "Discussion")
 
-    var liveCommentsList by remember(details.discussionComments) { mutableStateOf(details.discussionComments) }
     var messageText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
+    val isSending = discussionPostState is DiscussionPostState.Sending
 
-    // Automatically snaps views downward whenever a comment arrives
-    LaunchedEffect(key1 = liveCommentsList.size) {
-        if (liveCommentsList.isNotEmpty() && selectedTab == 2) {
-            listState.animateScrollToItem(liveCommentsList.size + 1) // +2 offsets for headers layout items
+    LaunchedEffect(discussionPostState) {
+        if (discussionPostState is DiscussionPostState.Sent) {
+            messageText = ""
+        }
+    }
+
+    LaunchedEffect(key1 = discussionComments.size) {
+        if (discussionComments.isNotEmpty() && selectedTab == 2) {
+            listState.animateScrollToItem(discussionComments.size + 1)
         }
     }
 
@@ -313,8 +331,18 @@ fun MatchHubContent(
                     }
                 }
 
-                2 -> { // DISCUSSION GROUPED MESSAGES ITEMS
-                    items(liveCommentsList, key = { it.id }) { comment ->
+                2 -> { // DISCUSSION — live from Firestore
+                    if (discussionComments.isEmpty()) {
+                        item {
+                            Text(
+                                "No messages yet. Be the first to start the arena banter!",
+                                color = Color.Gray,
+                                fontSize = 13.sp,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            )
+                        }
+                    }
+                    items(discussionComments, key = { it.id }) { comment ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -378,6 +406,17 @@ fun MatchHubContent(
 
         // FOOTER TEXT-FIELD OVERLAY STRIP (Renders smoothly under tab 2 context focus)
         if (selectedTab == 2) {
+            if (discussionPostState is DiscussionPostState.Error) {
+                Text(
+                    text = discussionPostState.message,
+                    color = Color(0xFFFF8A80),
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .clickable { onDismissPostError() },
+                )
+            }
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = Color.Transparent,
@@ -415,22 +454,17 @@ fun MatchHubContent(
                         )
                     )
 
-                    val canSend = messageText.isNotBlank()
+                    val canSend = messageText.isNotBlank() && !isSending
                     IconButton(
                         onClick = {
                             if (canSend) {
-                                val userPostItem = Comment(
-                                    id = java.util.UUID.randomUUID().toString(),
-                                    username = "You (Arena Fan)",
-                                    text = messageText.trim(),
-                                    avatarUrl = "",
-                                    timestamp = "Just Now",
-                                    supportTeamBadge = details.team1Name.take(3).uppercase()
+                                onPostComment(
+                                    messageText.trim(),
+                                    details.team1Name.take(3).uppercase(),
                                 )
-                                liveCommentsList = liveCommentsList + userPostItem
-                                messageText = ""
                             }
                         },
+                        enabled = canSend,
                         modifier = Modifier
                             .size(48.dp)
                             .clip(CircleShape)

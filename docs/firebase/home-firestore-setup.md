@@ -6,6 +6,8 @@ The Home screen reads two Firestore collections:
 |------------|---------|
 | `matches` | Today's matches carousel (`showOnHome = true`) |
 | `leaderboard_global` | Top 3 users by `points` (descending) |
+| `trending_predictions` | Trending Predictions on Home — see [trending-predictions-setup.md](./trending-predictions-setup.md) |
+| `fan_polls` | Fan Polls on Home / Match Hub — see [fan-polls-setup.md](./fan-polls-setup.md) |
 
 Project ID (from `app/google-services.json`): **simpleroomapp-46c79**
 
@@ -124,7 +126,17 @@ Before production, restrict `read` to signed-in users if needed: `allow read: if
 
 ---
 
-## 7. Adding more data later
+## 7. Empty Today's Matches list?
+
+Check Logcat tag **`FirestoreMatches`**:
+
+- `Raw document count: 2` but `Parsed match count: 0` → field type mismatch; ensure `sortOrder` and `fanSupportPredictionRatio` are **numbers**, not strings.
+- `today FAILED` → Firestore rules or network; read the stack trace.
+- Add **`sortOrder`** (number) on **every** document in `matches`, including `match_2`.
+
+---
+
+## 8. Adding more data later
 
 | Action | How |
 |--------|-----|

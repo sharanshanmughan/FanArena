@@ -1,0 +1,21 @@
+{
+  "matchId": "M_RCB_KKR_01",
+  "comments": {
+    "seed_c1": {
+      "userId": "seed_user_1",
+      "username": "KingKohli_Fan",
+      "avatarUrl": "",
+      "text": "Kohli scoring a century tonight at Chinnaswamy! 💥",
+      "supportTeamBadge": "RCB",
+      "createdAt": 1700000000000
+    },
+    "seed_c2": {
+      "userId": "seed_user_2",
+      "username": "KnightRider99",
+      "avatarUrl": "",
+      "text": "Narines bowling economy is going to bottleneck their powerplay.",
+      "supportTeamBadge": "KKR",
+      "createdAt": 1700000300000
+    }
+  }
+}
